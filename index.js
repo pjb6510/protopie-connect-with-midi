@@ -1,5 +1,6 @@
-const easymidi = require('easymidi');
 const io = require('socket.io-client');
+const connectSocket = require('./connectSocket');
+const connectPiano = require('./connectPiano');
 const PianoPlayer = require('./pianoPlayer');
 
 const pianoPlayer = new PianoPlayer();
@@ -50,44 +51,8 @@ const handleMessageReceive = (data) => {
   }
 };
 
-const connectSocket = (io, address) => {
-  const socket = io(address, {
-    reconnectionAttempts: 5,
-    timeout: 1000 * 10,
-  });
-
-  socket
-    .on('connect_error', (err) => {
-      console.error('[SOCKETIO] disconnected, error', err.toString());
-    })
-    .on('connect_timeout', () => {
-      console.error('[SOCKETIO] disconnected by timeout');
-    })
-    .on('reconnect_failed', () => {
-      console.error('[SOCKETIO] disconnected by retry_timeout');
-    })
-    .on('reconnect_attempt', (count) => {
-      console.error(
-        `[SOCKETIO] Retry to connect #${count}, Please make sure ProtoPie Connect is running on ${address}`
-      );
-    })
-    .on('connect', async () => {
-      console.log('[SOCKETIO] connected to', address);
-    })
-    .on('disconnect', () => {
-      console.log('[SOCKETIO] disconnected');
-    })
-    .on('ppMessage', handleMessageReceive);
-
-  return socket;
-};
-
-const socket = connectSocket(io, 'http://localhost:9981');
-
-const pianos = easymidi
-  .getInputs()
-  .filter((instrument) => instrument === 'Digital Piano');
-const input = pianos[0] ? new easymidi.Input(pianos[0]) : null;
+const socket = connectSocket(io, 'http://localhost:9981', handleMessageReceive);
+const input = connectPiano();
 
 const handleNoteon = (message) => {
   console.log('noteon', message);
