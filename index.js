@@ -52,7 +52,7 @@ const handleMessageReceive = (data) => {
 };
 
 const socket = connectSocket(io, 'http://localhost:9981', handleMessageReceive);
-const input = connectPiano();
+const pianoInput = connectPiano();
 
 const handleNoteon = (message) => {
   console.log('noteon', message);
@@ -66,9 +66,9 @@ const handleNoteon = (message) => {
   });
 };
 
-if (input) {
+if (pianoInput) {
   console.log('connected to piano');
-  input.on('noteon', handleNoteon);
+  pianoInput.on('noteon', handleNoteon);
 } else {
   console.log('There is no connected piano. This app only receives messages.');
 }
